@@ -1,9 +1,10 @@
 //LINK VIDEO: Algoritmo Paginas Segunda chance exemplo basico:https://www.youtube.com/watch?v=_cUQcisicgA
 //-----------------------------------------------
-//FAZER ABERTURA DE ARQUIVO PARA TESTAR
-//ERRO NA FUNÇÃO clearReferenceBits
-//POSSIVEISERROS:
+//ERRO NA FUNÇÃO clearReferenceBits --> CORRIGIDO
+//POSSIVEIS ERROS:
 //MEMORIA --> CORRIGIDO
+//PEGAR DADOS DO ARQUIVO E MONTAR VETOR REQUEST
+//FAZER TESTES ANTES
 
 //------------------------------------------------
 #include <stdio.h>
@@ -127,19 +128,32 @@ int main() {
     int memorySize = 4;
     int numRequests = 10;
     int clearAfter = 5; // Número de requisições após as quais os bits de referência serão limpos
-    int executionMode = 1;
+    int executionMode;
     Memory memory = initializeMemory(memorySize);   // Inicializa a memória
     //------------------------------------------------------------------
     // substituir pelo arquivo:
     int requests[] = {0, 1, 2, 3, 4, 0, 1, 5, 6, 0};
 
+
+            // MENU INTERATIVO
+    //----------------------------------------------------------------------------
+    printf("\n---------------------------------------------");
+    printf("\nESCOLHA O MODO DE EXECUCAO QUE DESEJA: \n");
+    printf("\n digite '1' --> modo de execucao passo a passo\n");
+    printf("\n digite '2' --> modo de execucao direta\n");
+    scanf("%d",&executionMode);
+
+
     for (int i = 0; i < numRequests; i++) {
         int pageId = requests[i];
 
         // Limpa os bits de referência após X requisições
-        if (i > 0 && i % clearAfter == 0) {
-            clearReferenceBits(&memory, clearAfter);
-        }
+     // Limpa os bits de referência após X requisições
+    if (i > 0 && i % clearAfter == 0) {
+    int newPageId = requests[i+1];
+    clearReferenceBits(&memory, clearAfter, newPageId);
+                                              }
+
 
         // Verifica se a página está na memória
         int pageInMemory = 0;
@@ -156,13 +170,6 @@ int main() {
             handlePageFault(&memory, pageId);
         }
 
-            // MENU INTERATIVO
-    //----------------------------------------------------------------------------
-    printf("\n---------------------------------------------");
-    printf("\nESCOLHA O MODO DE EXECUCAO QUE DESEJA: \n");
-    printf("\n digite '1' --> modo de execucao passo a passo\n");
-    printf("\n digite '2' --> modo de execucao direta\n");
-    scanf("%d",&executionMode);
 
         // Modo de execução - Passo a passo
         if (executionMode == 1) {
