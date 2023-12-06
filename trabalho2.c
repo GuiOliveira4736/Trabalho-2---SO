@@ -10,16 +10,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// página
+// Página
 typedef struct {
     int id;        // Identificador da página
     int referenced; // Bit de referência
 } Page;
 
-// memória
+// Memória
 typedef struct {
-    int size;       // Tamanho da memória
-    Page *pages;    // Array de páginas na memória
+    int size;    // Tamanho total da memória
+    Page *pages; // Array de páginas na memória
 } Memory;
 
 // Função para inicializar a memória
@@ -74,7 +74,7 @@ void handlePageFault(Memory *memory, int pageId) {
 
         while (replacedPageIndex == -1) {
             for (int i = 0; i < memory->size; i++) {
-                if (memory->pages[i].referenced == 0) {
+                if (memory->pages[i].referenced == 0 && memory->pages[i].id != pageId) {
                     replacedPageIndex = i;
                     break;
                 } else {
@@ -107,7 +107,7 @@ void clearReferenceBits(Memory *memory, int clearAfter, int newPageId) {
                 // Limpa o bit de referência se a página não foi referenciada recentemente
                 if (memory->pages[i].referenced == 0) {
                     printf("Bit de referência da página %d limpo.\n", memory->pages[i].id);
-                    
+
                     // Substitui a página escolhida
                     int replacedPageIndex = i;
 
@@ -122,38 +122,51 @@ void clearReferenceBits(Memory *memory, int clearAfter, int newPageId) {
     }
 }
 
-
 int main() {
     // Tamanho da memória e número de requisições
-    int memorySize = 4;
-    int numRequests = 10;
-    int clearAfter = 5; // Número de requisições após as quais os bits de referência serão limpos
+    int memorySize;
+    int numRequests;
+    int clearAfter; // Número de requisições após as quais os bits de referência serão limpos
     int executionMode;
-    Memory memory = initializeMemory(memorySize);   // Inicializa a memória
+
+    // Obtenha o tamanho do slot do usuário
+    do {
+        printf("\nDigite o tamanho da memória (entre 3 e 9): ");
+        scanf("%d", &memorySize);
+    } while (memorySize < 3 || memorySize > 9);
+
+    printf("\nO algoritmo deverá limpar os bits de referência das páginas após quantas requisições? ");
+    scanf("%d", &clearAfter);
+
+    Memory memory = initializeMemory(memorySize); // Inicializa a memória
     //------------------------------------------------------------------
-    // substituir pelo arquivo:
-    int requests[] = {0, 1, 2, 3, 4, 0, 1, 5, 6, 0};
+    // Substituir pelo arquivo:
+    int requests[] = {1, 5, 5, 3, 1, 4, 5, 3};
+    //-------
 
+      // Calcula o tamanho do vetor
+    size_t numRequestsSize = sizeof(requests) / sizeof(requests[0]);
+     // Converte de size_t para int
+     numRequests = (int)numRequestsSize;
+    printf("\nO tamanho do vetor é: %d\n", numRequests);
+    printf("\n\n");
 
-            // MENU INTERATIVO
+                        // MENU INTERATIVO
     //----------------------------------------------------------------------------
     printf("\n---------------------------------------------");
     printf("\nESCOLHA O MODO DE EXECUCAO QUE DESEJA: \n");
     printf("\n digite '1' --> modo de execucao passo a passo\n");
     printf("\n digite '2' --> modo de execucao direta\n");
-    scanf("%d",&executionMode);
-
+    scanf("%d", &executionMode);
 
     for (int i = 0; i < numRequests; i++) {
         int pageId = requests[i];
 
         // Limpa os bits de referência após X requisições
-     // Limpa os bits de referência após X requisições
-    if (i > 0 && i % clearAfter == 0) {
-    int newPageId = requests[i+1];
-    clearReferenceBits(&memory, clearAfter, newPageId);
-                                              }
-
+        if (i > 0 && i % clearAfter == 0) {
+            int newPageId = requests[i + 1];
+            clearReferenceBits(&memory, clearAfter, newPageId);
+        }
 
         // Verifica se a página está na memória
         int pageInMemory = 0;
@@ -170,7 +183,6 @@ int main() {
             handlePageFault(&memory, pageId);
         }
 
-
         // Modo de execução - Passo a passo
         if (executionMode == 1) {
             // Aguarda a entrada do usuário para continuar
@@ -179,7 +191,7 @@ int main() {
         }
     }
 
-    //  Execução direta
+    // Execução direta
     if (executionMode == 2) {
         // Exibe o estado final da memória
         printMemoryStatus(memory);
